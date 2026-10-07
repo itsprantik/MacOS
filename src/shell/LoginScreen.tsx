@@ -1,87 +1,159 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSystemStore } from '../core/store/systemStore'
+import { wallpaperStyle } from '../core/wallpaper'
 
-export default function LoginScreen() {
-  const { userName, setPhase } = useSystemStore()
-  const [password, setPassword] = useState('')
-  const [shake, setShake] = useState(false)
+const PASSWORD = '' // empty = any password works. Set e.g. 'admin' to enforce one.
+
+function useClock() {
   const [now, setNow] = useState(new Date())
-
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(id)
   }, [])
+  return now
+}
 
-  const handleLogin = (e: React.FormEvent) => {
+function StatusBar() {
+  return (
+    <div className="absolute top-0 right-0 flex items-center gap-3 px-5 py-2 text-white text-[13px] font-semibold">
+      <span>U.S.</span>
+      <svg width="18" height="12" viewBox="0 0 18 12" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round">
+        <rect x=".5" y=".5" width="17" height="11" rx="2" />
+        <path d="M3 4h1M6 4h1M9 4h1M12 4h1M3 6.5h1M6 6.5h1M9 6.5h1M12 6.5h1M5 9h8" />
+      </svg>
+      <svg width="27" height="13" viewBox="0 0 27 13">
+        <rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="currentColor" opacity=".5" />
+        <rect x="2" y="2" width="20" height="9" rx="2" fill="currentColor" />
+        <path d="M25 4.5v4c.8-.3 1.5-1.1 1.5-2s-.7-1.7-1.5-2z" fill="currentColor" opacity=".5" />
+      </svg>
+      <svg width="17" height="13" viewBox="0 0 17 13" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+        <path d="M1.5 4.6a10 10 0 0 1 14 0" />
+        <path d="M4 7.3a6.4 6.4 0 0 1 9 0" />
+        <path d="M6.5 10a2.8 2.8 0 0 1 4 0" />
+        <circle cx="8.5" cy="11.5" r="1" fill="currentColor" stroke="none" />
+      </svg>
+    </div>
+  )
+}
+
+export default function LoginScreen() {
+  const { userName, avatar, setPhase } = useSystemStore()
+  const now = useClock()
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const [password, setPassword] = useState('')
+  const [revealed, setRevealed] = useState(false)
+  const [shake, setShake] = useState(false)
+  const [unlocking, setUnlocking] = useState(false)
+
+  // keep the (hidden) password input focused so typing works instantly
+  useEffect(() => {
+    const focus = () => {
+      setRevealed(true)
+      inputRef.current?.focus()
+    }
+    window.addEventListener('mousedown', focus)
+    return () => window.removeEventListener('mousedown', focus)
+  }, [])
+
+  const date = now
+    .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+    .replace(',', '')
+  const time = now
+    .toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+    .replace(/\s?(AM|PM)/i, '')
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Demo: any password works. Replace with real check later.
-    // Example: if (password !== 'admin') { setShake(true); ... return }
-    setPhase('desktop')
+    if (PASSWORD && password !== PASSWORD) {
+      setShake(true)
+      setPassword('')
+      setTimeout(() => setShake(false), 400)
+      return
+    }
+    setUnlocking(true)
+    setTimeout(() => setPhase('desktop'), 500)
   }
+
+  const isImage = avatar.startsWith('/') || avatar.startsWith('http')
 
   return (
     <div
-      className="fixed inset-0 fade-in flex flex-col items-center justify-center text-white"
-      style={{
-        background:
-          'radial-gradient(circle at 20% 20%, #5b6ee1 0%, transparent 50%),' +
-          'radial-gradient(circle at 80% 70%, #c850c0 0%, transparent 50%),' +
-          '#1b1f3b',
-      }}
+      className={`fixed inset-0 overflow-hidden fade-in transition-all duration-500
+        ${unlocking ? 'opacity-0 scale-105 blur-sm' : 'opacity-100'}`}
+      style={wallpaperStyle}
     >
-      {/* blur layer */}
-      <div className="absolute inset-0 backdrop-blur-2xl bg-black/20" />
+      <StatusBar />
 
-      {/* date and time */}
-      <div className="absolute top-16 text-center z-10">
-        <div className="text-lg font-medium opacity-90">
-          {now.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}
-        </div>
-        <div className="text-7xl font-semibold tracking-tight">
-          {now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+      {/* date + time */}
+      <div className="absolute top-[6%] inset-x-0 text-center">
+        <div className="text-[3vh] font-medium text-[#d6f4ff]/90 tracking-tight">{date}</div>
+        <div
+          className="mt-[0.5vh] leading-none tracking-tight"
+          style={{
+            fontSize: '14vh',
+            fontWeight: 800,
+            fontFamily: 'ui-rounded, "SF Pro Rounded", system-ui, sans-serif',
+            background: 'linear-gradient(180deg, rgba(255,255,255,0.95), rgba(210,234,255,0.65))',
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            color: 'transparent',
+            filter: 'drop-shadow(0 2px 14px rgba(0,60,160,0.25))',
+          }}
+        >
+          {time}
         </div>
       </div>
 
       {/* user */}
-      <form
-        onSubmit={handleLogin}
-        className={`relative z-10 flex flex-col items-center ${shake ? 'shake' : ''}`}
-      >
-        <div className="w-24 h-24 rounded-full bg-gradient-to-b from-gray-300 to-gray-500
-          flex items-center justify-center text-4xl font-semibold shadow-xl">
-          {userName[0]}
-        </div>
-        <div className="mt-3 text-xl font-medium">{userName}</div>
+      <div className="absolute bottom-[5%] inset-x-0 flex flex-col items-center">
+        {isImage ? (
+          <img src={avatar} alt="" className="w-[54px] h-[54px] rounded-full object-cover shadow-lg" />
+        ) : (
+          <div className="w-[54px] h-[54px] rounded-full bg-gradient-to-b from-[#b7e38f] to-[#4fb581] flex items-center justify-center text-[28px] shadow-lg">
+            {avatar}
+          </div>
+        )}
+        <div className="mt-2 text-[15px] font-semibold text-white">{userName}</div>
 
-        <div className="mt-4 relative">
-          <input
-            type="password"
-            autoFocus
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Enter Password"
-            className="w-56 rounded-full bg-white/20 backdrop-blur-md px-4 py-1.5 pr-9
-              text-sm placeholder-white/60 outline-none focus:bg-white/30"
-          />
-          <button
-            type="submit"
-            className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full
-              bg-white/30 hover:bg-white/50 flex items-center justify-center text-xs"
+        <form onSubmit={handleSubmit} className="relative mt-1.5 h-[28px] w-[220px] flex items-center justify-center">
+          {/* hint */}
+          <div
+            className={`absolute whitespace-nowrap text-[13px] font-semibold text-[#a9bdf5]
+              transition-opacity duration-200 ${revealed || password ? 'opacity-0' : 'opacity-100'}`}
           >
-          <button type="submit" className="...same classes...">→</button>
-          </button>
-        </div>
-        <div className="mt-3 text-xs opacity-60">Press Enter to log in</div>
-      </form>
+            Touch ID or Enter Password
+          </div>
 
-      {/* bottom actions */}
-      <div className="absolute bottom-10 z-10 flex gap-8 text-xs opacity-80">
-        <button onClick={() => setPhase('boot')} className="hover:opacity-100">
-          Restart
-        </button>
-        <button onClick={() => setPhase('boot')} className="hover:opacity-100">
-          Shut Down
-        </button>
+          {/* password pill */}
+          <div
+            className={`relative transition-opacity duration-200
+              ${revealed || password ? 'opacity-100' : 'opacity-0'} ${shake ? 'shake' : ''}`}
+          >
+            <input
+              ref={inputRef}
+              autoFocus
+              type="password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                setRevealed(true)
+              }}
+              placeholder="Enter Password"
+              className="w-[190px] rounded-full bg-white/25 backdrop-blur-md px-4 py-1 pr-8
+                text-center text-[13px] text-white placeholder-white/70 outline-none"
+            />
+            {password && (
+              <button
+                type="submit"
+                className="absolute right-1 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full
+                  bg-white/40 hover:bg-white/60 text-white text-[11px] flex items-center justify-center"
+              >
+                →
+              </button>
+            )}
+          </div>
+        </form>
       </div>
     </div>
   )

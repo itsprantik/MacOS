@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useSystemStore } from '../core/store/systemStore'
-import Logo from '../components/Logo'
 
 const BOOT_DURATION = 4500 // ms
 
@@ -37,7 +36,12 @@ export default function BootScreen() {
       className={`fixed inset-0 bg-black flex flex-col items-center justify-center
         transition-opacity duration-700 ${fading ? 'opacity-0' : 'opacity-100'}`}
     >
-      <Logo className="w-20 h-24 text-white" />
+    <img
+    src="/logo.png"
+    alt=""
+    draggable={false}
+    className="w-20 invert mix_blend-screen"
+    />
 
       <div className="mt-16 w-48 h-1 rounded-full bg-white/20 overflow-hidden">
         <div
