@@ -1,6 +1,6 @@
 import { useSystemStore } from '../core/store/systemStore'
 import { useUiStore } from '../core/store/uiStore'
-import { wallpaperStyle } from '../core/wallpaper'
+import { useWallpaperStyle } from '../core/wallpaper'
 import MenuBar from './MenuBar'
 import Dock from './Dock'
 import ControlCenter from './ControlCenter'
@@ -10,6 +10,7 @@ import WidgetGallery from './WidgetGallery'
 import WindowManager from '../windowing/WindowManager'
 
 export default function Desktop() {
+  const wallpaper = useWallpaperStyle()
   const brightness = useSystemStore((s) => s.brightness)
   const { openMenu, setGallery } = useUiStore()
 
@@ -27,7 +28,7 @@ export default function Desktop() {
   return (
     <div
       className="fixed inset-0 overflow-hidden fade-in"
-      style={wallpaperStyle}
+      style={wallpaper}
       onContextMenu={onContextMenu}
     >
       <WidgetsLayer />

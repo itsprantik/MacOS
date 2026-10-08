@@ -1,22 +1,24 @@
 import type { CSSProperties } from 'react'
 import { useWindowStore } from '../core/store/windowStore'
 import { getApp } from '../core/appRegistry'
+import { getAppComponent } from '../apps'
 import type { WindowState } from '../core/types'
-import Placeholder from '../apps/Placeholder'
 import TitleBar from './TitleBar'
 
 const MENUBAR_H = 28
 const DOCK_SPACE = 92
 const MIN_W = 640
 const MIN_H = 320
+const DRAG_ZONE = 40
+const NO_DRAG = 'button,input,textarea,select,a,[data-nodrag]'
 
 export default function AppWindow({ win }: { win: WindowState }) {
   const active = useWindowStore((s) => s.activeId === win.id)
-  const { focusWindow, moveWindow, resizeWindow } = useWindowStore.getState()
+  const { focusWindow, moveWindow, resizeWindow, toggleMaximize } = useWindowStore.getState()
 
   const app = getApp(win.appId)
   if (!app) return null
-  const Content = app.component ?? Placeholder
+  const Content = getAppComponent(app.id)
 
   const track = (move: (e: PointerEvent) => void) => {
     const up = () => {
@@ -27,9 +29,14 @@ export default function AppWindow({ win }: { win: WindowState }) {
     window.addEventListener('pointerup', up)
   }
 
+  const inDragZone = (e: React.PointerEvent | React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    return e.clientY - rect.top <= DRAG_ZONE && !(e.target as HTMLElement).closest(NO_DRAG)
+  }
+
   const startDrag = (e: React.PointerEvent) => {
-    focusWindow(win.id)
     if (win.maximized) return
+    e.preventDefault()
     const dx = e.clientX - win.x
     const dy = e.clientY - win.y
     track((ev) => moveWindow(win.id, ev.clientX - dx, Math.max(MENUBAR_H, ev.clientY - dy)))
@@ -53,14 +60,20 @@ export default function AppWindow({ win }: { win: WindowState }) {
 
   return (
     <div
-      onPointerDown={() => focusWindow(win.id)}
+      onPointerDown={(e) => {
+        focusWindow(win.id)
+        if (inDragZone(e)) startDrag(e)
+      }}
+      onDoubleClick={(e) => {
+        if (inDragZone(e)) toggleMaximize(win.id)
+      }}
       className={`win-in absolute rounded-[14px] overflow-hidden border border-white/25 origin-bottom
         transition-[transform,opacity,box-shadow] duration-300
         ${win.minimized ? 'opacity-0 scale-50 translate-y-[40vh] pointer-events-none' : 'opacity-100 pointer-events-auto'}
         ${active ? 'shadow-[0_24px_70px_rgba(0,0,0,0.5)]' : 'shadow-[0_8px_24px_rgba(0,0,0,0.3)]'}`}
       style={{ ...frame, zIndex: win.zIndex }}
     >
-      <TitleBar win={win} active={active} onDragStart={startDrag} />
+      <TitleBar win={win} active={active} />
       <div className="w-full h-full">
         <Content title={app.title} />
       </div>

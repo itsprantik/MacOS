@@ -2,11 +2,7 @@ import { useWindowStore } from '../core/store/windowStore'
 import type { WindowState } from '../core/types'
 
 function Light({
-  color,
-  glyph,
-  label,
-  active,
-  onClick,
+  color, glyph, label, active, onClick,
 }: {
   color: string
   glyph: string
@@ -26,28 +22,12 @@ function Light({
   )
 }
 
-export default function TitleBar({
-  win,
-  active,
-  onDragStart,
-}: {
-  win: WindowState
-  active: boolean
-  onDragStart: (e: React.PointerEvent) => void
-}) {
+export default function TitleBar({ win, active }: { win: WindowState; active: boolean }) {
   const { closeWindow, minimizeWindow, toggleMaximize } = useWindowStore.getState()
 
   return (
-    <div
-      onPointerDown={onDragStart}
-      onDoubleClick={() => toggleMaximize(win.id)}
-      className="absolute top-0 inset-x-0 h-10 z-20"
-    >
-      <div
-        className="group inline-flex gap-2 p-3.5"
-        onPointerDown={(e) => e.stopPropagation()}
-        onDoubleClick={(e) => e.stopPropagation()}
-      >
+    <div className="absolute top-0 left-0 z-40 pointer-events-none">
+      <div className="group pointer-events-auto inline-flex gap-2 p-3.5">
         <Light color="#ff5f57" glyph="×" label="Close" active={active} onClick={() => closeWindow(win.id)} />
         <Light color="#febc2e" glyph="–" label="Minimize" active={active} onClick={() => minimizeWindow(win.id)} />
         <Light color="#28c840" glyph="+" label="Zoom" active={active} onClick={() => toggleMaximize(win.id)} />

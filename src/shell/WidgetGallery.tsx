@@ -1,24 +1,28 @@
+import { useEffect } from 'react'
 import { Plus } from 'lucide-react'
 import { useUiStore } from '../core/store/uiStore'
 import { useWidgetStore, type WidgetType } from '../core/store/widgetStore'
 import { widgetTypes } from '../widgets'
 
 export default function WidgetGallery() {
-  const { galleryOpen, setGallery } = useUiStore()
+  const galleryOpen = useUiStore((s) => s.galleryOpen)
+  const setGallery = useUiStore((s) => s.setGallery)
   const addWidget = useWidgetStore((s) => s.addWidget)
+
+  useEffect(() => {
+    if (!galleryOpen) return
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setGallery(false)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [galleryOpen, setGallery])
+
   if (!galleryOpen) return null
 
   return (
-    <div
-      className="fixed inset-0 z-[1500] flex items-center justify-center bg-black/25"
-      onMouseDown={() => setGallery(false)}
-    >
-      <div
-        className="w-[780px] max-w-[94vw] max-h-[82vh] flex flex-col rounded-3xl bg-neutral-900/70 backdrop-blur-3xl border border-white/15 shadow-2xl text-white"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-[1500] pointer-events-none flex items-center pl-[4vw]">
+      <div className="pointer-events-auto w-[640px] max-w-[60vw] max-h-[78vh] flex flex-col rounded-3xl bg-neutral-900/75 backdrop-blur-3xl border border-white/15 shadow-2xl text-white">
         <div className="px-6 pt-5 pb-3 flex items-center justify-between">
-          <div className="text-lg font-semibold">Widgets</div>
+          <div className="text-lg font-semibold">Edit Widgets</div>
           <button
             onClick={() => setGallery(false)}
             className="px-4 py-1 rounded-full bg-[#0a84ff] text-sm font-medium"
@@ -46,7 +50,7 @@ export default function WidgetGallery() {
         </div>
 
         <div className="px-6 pb-4 text-[12px] text-white/50">
-          Click a widget to add it. Right-click a widget on the desktop to remove it.
+          Click a widget to add it. Drag widgets on the desktop to move them, or click the − badge to remove one.
         </div>
       </div>
     </div>

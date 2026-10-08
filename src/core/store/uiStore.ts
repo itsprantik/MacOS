@@ -13,6 +13,8 @@ interface UiState {
   closeMenu: () => void
   galleryOpen: boolean
   setGallery: (open: boolean) => void
+  settingsPage: string
+  setSettingsPage: (page: string) => void
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -21,4 +23,6 @@ export const useUiStore = create<UiState>((set) => ({
   closeMenu: () => set({ contextMenu: null }),
   galleryOpen: false,
   setGallery: (galleryOpen) => set({ galleryOpen }),
+  settingsPage: 'wifi',
+  setSettingsPage: (settingsPage) => set({ settingsPage }),
 }))

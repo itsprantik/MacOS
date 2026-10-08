@@ -21,10 +21,16 @@ const entries: Entry[] = [
 
 function DockIcon({ entry }: { entry: Entry }) {
   const [failed, setFailed] = useState(false)
-  if (failed) {
+    if (failed) {
+    const term = entry.key === 'terminal'
     return (
-      <div className="w-full h-full rounded-[22%] bg-gradient-to-b from-neutral-400 to-neutral-600 flex items-center justify-center text-white text-xl font-semibold">
-        {entry.title[0]}
+      <div
+        className={`w-full h-full rounded-[22%] flex items-center justify-center font-semibold shadow-inner
+          ${term
+            ? 'bg-gradient-to-b from-neutral-700 to-black text-white text-[17px] font-mono border border-white/20'
+            : 'bg-gradient-to-b from-neutral-400 to-neutral-600 text-white text-xl'}`}
+      >
+        {term ? '>_' : entry.title[0]}
       </div>
     )
   }

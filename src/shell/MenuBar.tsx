@@ -6,10 +6,12 @@ import { getApp } from '../core/appRegistry'
 import { useBattery } from '../core/hooks/useBattery'
 import { BatteryIcon, WifiIcon, ControlCenterIcon } from '../components/StatusIcons'
 import MenuPanel from '../components/MenuPanel'
+import { useUiStore } from '../core/store/uiStore'
 
 const MENUS = ['File', 'Edit', 'View', 'Window', 'Help']
 
 export default function MenuBar() {
+  const setSettingsPage = useUiStore((s) => s.setSettingsPage)
   const { controlCenterOpen, setControlCenter, wifi, setPhase, userName } = useSystemStore()
   const openApp = useWindowStore((s) => s.openApp)
   const activeTitle = useWindowStore((s) => {
@@ -49,6 +51,7 @@ export default function MenuBar() {
                 className="absolute top-7 left-0"
                 onDone={() => setAppleOpen(false)}
                 items={[
+                  { label: 'About the Creator…', onClick: () => { setSettingsPage('creator'); openApp('settings') } },
                   { label: 'About This Mac', disabled: true },
                   { divider: true },
                   { label: 'System Settings…', onClick: () => openApp('settings') },
