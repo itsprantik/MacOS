@@ -3,29 +3,49 @@ MacOS Web OS
 A macOS-inspired Web OS built with React, TypeScript, Vite, Tailwind CSS, Zustand, and Electron.
 
 Features
+
 *macOS-style desktop
+
 *Window management
+
 *Resizable and movable application windows
+
 *Dock
+
 *Menu bar
+
 *Finder
+
 *Safari
+
 *Music
+
 *Settings
+
 *Terminal
+
 *Calculator
+
 *Clock
+
 *News
+
 *Desktop widgets
+
 *Multiple wallpapers
+
 *Dark and light UI
+
 *Electron desktop support
+
 *Native browser rendering through Electron
+
 *Requirements
 
 Install the following before cloning the project:
 
 Git
+
 Node.js
 
 npm
@@ -69,16 +89,27 @@ npm install
 This installs the dependencies specified in package.json, including:
 
 React
+
 React DOM
+
 TypeScript
+
 Vite
+
 Tailwind CSS
+
 Zustand
+
 Lucide React
+
 Electron
+
 Electron Builder
+
 Oxlint
+
 TSX
+
 Run the Web Version
 
 Start the Vite development server:
@@ -104,6 +135,7 @@ This performs TypeScript compilation and creates the Vite production build.
 The generated files will be placed in:
 
 dist/
+
 Preview the Production Build
 
 After building:
@@ -117,6 +149,7 @@ Run Lint
 Run Oxlint with:
 
 npm run lint
+
 Environment Variables
 
 If you want Google search results inside the Safari application, create:
@@ -144,10 +177,15 @@ Do not commit .env.local to GitHub.
 Add the following to .gitignore:
 
 node_modules
+
 dist
+
 .env
+
 .env.local
+
 .env.*.local
+
 Electron
 
 The project includes Electron for running the Web OS as a desktop application.
@@ -155,7 +193,9 @@ The project includes Electron for running the Web OS as a desktop application.
 Electron-related files are located in:
 
 electron/
+
 ├── main.cjs
+
 └── preload.cjs
 
 The Electron main process is responsible for creating the desktop window and native browser surfaces.
@@ -169,69 +209,129 @@ Electron Dependencies
 Electron and Electron Builder are already included in the project:
 
 "electron": "^44.7.0",
+
 "electron-builder": "^26.15.3"
 
 Install them automatically with:
 
 npm install
+
 Project Structure
+
 macos-web-os/
+
 │
+
 ├── public/
+
 │   └── wallpapers/
+
 │       ├── default.jpg
+
 │       ├── default2.jpg
+
 │       ├── default3.jpg
+
 │       └── default4.jpg
+
 │
+
 ├── src/
+
 │   ├── apps/
+
 │   │   ├── Calculator/
+
 │   │   ├── Clock/
+
 │   │   ├── Finder/
+
 │   │   ├── Music/
+
 │   │   ├── News/
+
 │   │   ├── Safari/
+
 │   │   ├── Settings/
+
 │   │   └── Terminal/
+
 │   │
+
 │   ├── components/
+
 │   │
+
 │   ├── config/
+
 │   │
+
 │   ├── core/
+
 │   │   ├── store/
+
 │   │   └── ...
+
 │   │
+
 │   ├── shell/
+
 │   │   ├── Desktop.tsx
+
 │   │   ├── Dock.tsx
+
 │   │   ├── MenuBar.tsx
+
 │   │   └── ...
 │   │
+
 │   ├── widgets/
+
 │   │
+
 │   ├── windowing/
+
 │   │   ├── AppWindow.tsx
+
 │   │   ├── TitleBar.tsx
+
 │   │   └── WindowManager.tsx
+
 │   │
+
 │   ├── App.tsx
+
 │   ├── index.css
+
 │   └── main.tsx
+
 │
+
 ├── electron/
+
 │   ├── main.cjs
+
 │   └── preload.cjs
+
 │
+
 ├── .env.local
+
 ├── .gitignore
+
 ├── index.html
+
 ├── package.json
+
 ├── package-lock.json
+
 ├── tsconfig.json
+
+
 ├── vite.config.ts
+
 └── README.md
+
 Wallpapers
 
 Wallpaper images are stored in:
@@ -241,8 +341,11 @@ public/wallpapers/
 Current image wallpapers:
 
 default.jpg
+
 default2.jpg
+
 default3.jpg
+
 default4.jpg
 
 Additional gradient wallpapers are included in the wallpaper configuration.
@@ -258,11 +361,17 @@ public/wallpapers/my-wallpaper.jpg
 Then add it to the wallpaper list:
 
 {
+
   id: 'my-wallpaper',
+  
   name: 'My Wallpaper',
+  
   style: make(
+  
     'url(/wallpapers/my-wallpaper.jpg)',
+  
   ),
+
 },
 
 Do not use /public/ in the URL.
@@ -274,6 +383,7 @@ url(/wallpapers/my-wallpaper.jpg)
 Incorrect:
 
 url(/public/wallpapers/my-wallpaper.jpg)
+
 Adding an Application
 
 Applications are located inside:
@@ -293,24 +403,39 @@ Register the application using the project's application registry.
 Existing applications can be used as examples:
 
 src/apps/Calculator/
+
 src/apps/Clock/
+
 src/apps/Finder/
+
 src/apps/Music/
+
 src/apps/News/
+
 src/apps/Safari/
+
 src/apps/Settings/
+
 src/apps/Terminal/
+
 Window System
 
 The window system is responsible for application windows, including:
 
 Moving windows
+
 Resizing windows
+
 Minimizing windows
+
 Maximizing windows
+
 Closing windows
+
 Window focus
+
 Window stacking
+
 Active window management
 
 Important files are located in:
@@ -320,6 +445,7 @@ src/windowing/
 and:
 
 src/shell/
+
 Available Commands
 
 Install dependencies:
@@ -341,6 +467,7 @@ npm run build
 Preview production build:
 
 npm run preview
+
 Complete Setup From Scratch
 
 A new developer can set up the project with:
@@ -365,31 +492,45 @@ npm install
 Start the project:
 
 npm run dev
+
 Clean Installation
 
 If the project has dependency problems, remove node_modules.
 
 Windows PowerShell
+
 Remove-Item -Recurse -Force node_modules
+
 npm install
+
 Windows Command Prompt
+
 rmdir /s /q node_modules
+
 npm install
+
 macOS/Linux
+
 rm -rf node_modules
+
 npm install
 
 If you specifically need to regenerate the lockfile:
 
 rm -rf node_modules package-lock.json
+
 npm install
 
 On Windows PowerShell:
 
 Remove-Item -Recurse -Force node_modules
+
 Remove-Item package-lock.json
+
 npm install
+
 Troubleshooting
+
 Node.js is not recognized
 
 Run:
@@ -427,7 +568,9 @@ VITE_GOOGLE_CSE_ID=YOUR_GOOGLE_CSE_ID
 Then restart:
 
 Ctrl + C
+
 npm run dev
+
 Wallpaper is not loading
 
 Verify that the image exists in:
@@ -441,6 +584,7 @@ public/wallpapers/default2.jpg
 Then use:
 
 url(/wallpapers/default2.jpg)
+
 Development Workflow
 
 Pull the latest code:
@@ -462,6 +606,7 @@ npm run lint
 Then verify the production build:
 
 npm run build
+
 Contributing
 
 Fork the repository and clone your fork:
@@ -517,22 +662,29 @@ MIT License
 If using MIT, add a LICENSE file to the root of the repository.
 
 Quick Command Reference
+
 # Clone
+
 git clone YOUR_REPOSITORY_URL
 
 # Enter project
+
 cd macos-web-os
 
 # Install dependencies
+
 npm install
 
 # Start development
+
 npm run dev
 
 # Lint
+
 npm run lint
 
 # Production build
+
 npm run build
 
 # Preview production build
