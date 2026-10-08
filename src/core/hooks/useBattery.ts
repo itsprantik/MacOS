@@ -1,26 +1,47 @@
 import { useEffect, useState } from 'react'
 
-export function useBattery() {
-  const [state, setState] = useState({ level: 0.96, charging: false })
+export interface BatteryInfo {
+  supported: boolean
+  level: number
+  charging: boolean
+  chargingTime: number
+  dischargingTime: number
+}
+
+const EVENTS = ['levelchange', 'chargingchange', 'chargingtimechange', 'dischargingtimechange']
+
+export function useBattery(): BatteryInfo {
+  const [info, setInfo] = useState<BatteryInfo>({
+    supported: false, level: 1, charging: false, chargingTime: Infinity, dischargingTime: Infinity,
+  })
 
   useEffect(() => {
-    let battery: any
-    const update = () => setState({ level: battery.level, charging: battery.charging })
+    const nav = navigator as any
+    if (typeof nav.getBattery !== 'function') return
 
-    ;(navigator as any).getBattery?.().then((b: any) => {
+    let battery: any
+    let cancelled = false
+    const update = () =>
+      setInfo({
+        supported: true,
+        level: battery.level,
+        charging: battery.charging,
+        chargingTime: battery.chargingTime,
+        dischargingTime: battery.dischargingTime,
+      })
+
+    nav.getBattery().then((b: any) => {
+      if (cancelled) return
       battery = b
       update()
-      b.addEventListener('levelchange', update)
-      b.addEventListener('chargingchange', update)
+      EVENTS.forEach((ev) => b.addEventListener(ev, update))
     })
 
     return () => {
-      if (battery) {
-        battery.removeEventListener('levelchange', update)
-        battery.removeEventListener('chargingchange', update)
-      }
+      cancelled = true
+      if (battery) EVENTS.forEach((ev) => battery.removeEventListener(ev, update))
     }
   }, [])
 
-  return state
+  return info
 }

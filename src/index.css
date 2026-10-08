@@ -1,5 +1,15 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
+/* dark mode for the light-only apps (Finder, Music, Settings) */
+.dark-invert { filter: invert(1) hue-rotate(180deg); }
+.dark-invert img,
+.dark-invert video,
+.dark-invert [style*="background-image"],
+.dark-invert .keep-colors { filter: invert(1) hue-rotate(180deg); }
+
+/* don't lose mouse events over iframes while dragging a window */
+.dragging iframe { pointer-events: none; }
 html, body, #root {
   height: 100%;
   margin: 0;

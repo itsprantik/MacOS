@@ -14,6 +14,9 @@ interface SystemState {
   wallpaperId: string
   setWallpaper: (id: string) => void
 
+  theme: 'light' | 'dark' | 'auto'
+  setTheme: (t: SystemState['theme']) => void
+
   controlCenterOpen: boolean
   setControlCenter: (open: boolean) => void
 
@@ -35,33 +38,59 @@ export const useSystemStore = create<SystemState>()(
       phase: 'boot',
       userName: 'User',
       avatar: '🏕️',
-      setPhase: (phase) => set({ phase, controlCenterOpen: false }),
-      setUserName: (userName) => set({ userName }),
+
+      setPhase: (phase) =>
+        set({
+          phase,
+          controlCenterOpen: false,
+        }),
+
+      setUserName: (userName) =>
+        set({ userName }),
 
       wallpaperId: 'tahoe',
-      setWallpaper: (wallpaperId) => set({ wallpaperId }),
+
+      setWallpaper: (wallpaperId) =>
+        set({ wallpaperId }),
+
+      theme: 'light',
+
+      setTheme: (theme) =>
+        set({ theme }),
 
       controlCenterOpen: false,
-      setControlCenter: (controlCenterOpen) => set({ controlCenterOpen }),
+
+      setControlCenter: (controlCenterOpen) =>
+        set({ controlCenterOpen }),
 
       wifi: true,
       bluetooth: true,
       airdrop: false,
       focus: false,
-      toggle: (key) => set((s) => ({ [key]: !s[key] }) as Partial<SystemState>),
+
+      toggle: (key) =>
+        set((s) => ({
+          [key]: !s[key],
+        }) as Partial<SystemState>),
 
       brightness: 1,
       volume: 0.8,
-      setBrightness: (brightness) => set({ brightness }),
-      setVolume: (volume) => set({ volume }),
+
+      setBrightness: (brightness) =>
+        set({ brightness }),
+
+      setVolume: (volume) =>
+        set({ volume }),
     }),
     {
       name: 'webos-system',
+
       partialize: (s) => ({
         wallpaperId: s.wallpaperId,
         userName: s.userName,
         brightness: s.brightness,
         volume: s.volume,
+        theme: s.theme,
       }),
     },
   ),

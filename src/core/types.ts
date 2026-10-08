@@ -9,6 +9,7 @@ export interface AppDefinition {
   defaultSize: { width: number; height: number }
   singleInstance?: boolean
   inDock?: boolean
+  resizable?: boolean
 }
 
 export interface WindowState {
@@ -21,4 +22,5 @@ export interface WindowState {
   zIndex: number
   minimized: boolean
   maximized: boolean
+  resizable?: boolean
 }

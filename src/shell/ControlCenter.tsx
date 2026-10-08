@@ -7,6 +7,7 @@ import { useSystemStore } from '../core/store/systemStore'
 import { useMusicStore } from '../core/store/musicStore'
 import { useWindowStore } from '../core/store/windowStore'
 import { tracks } from '../apps/Music/tracks'
+import { useIsDark } from '../core/theme'
 
 const glass =
   'bg-white/[0.14] backdrop-blur-2xl border border-white/20 shadow-[0_4px_20px_rgba(0,0,0,0.15)]'
@@ -130,6 +131,8 @@ function NowPlaying() {
 
 export default function ControlCenter() {
   const s = useSystemStore()
+  const openApp = useWindowStore((st) => st.openApp)
+const dark = useIsDark()
 
   return (
     <>
@@ -168,10 +171,10 @@ export default function ControlCenter() {
             onChange={s.setVolume}
           />
 
-          <Round><Contrast size={20} /></Round>
-          <Round><Calculator size={20} /></Round>
-          <Round><Timer size={20} /></Round>
-          <Round><Camera size={20} /></Round>
+          <Round on={dark} onClick={() => s.setTheme(dark ? 'light' : 'dark')}><Contrast size={20} /></Round>
+<Round onClick={() => { openApp('calculator'); s.setControlCenter(false) }}><Calculator size={20} /></Round>
+<Round onClick={() => { openApp('clock'); s.setControlCenter(false) }}><Timer size={20} /></Round>
+<Round><Camera size={20} /></Round>
         </div>
 
         <div className="mt-3 flex justify-center">

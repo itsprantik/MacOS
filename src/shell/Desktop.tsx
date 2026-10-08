@@ -8,8 +8,9 @@ import ContextMenu from './ContextMenu'
 import WidgetsLayer from './WidgetsLayer'
 import WidgetGallery from './WidgetGallery'
 import WindowManager from '../windowing/WindowManager'
-
+import { useIsDark } from '../core/theme'
 export default function Desktop() {
+  const dark = useIsDark()
   const wallpaper = useWallpaperStyle()
   const brightness = useSystemStore((s) => s.brightness)
   const { openMenu, setGallery } = useUiStore()
@@ -31,6 +32,9 @@ export default function Desktop() {
       style={wallpaper}
       onContextMenu={onContextMenu}
     >
+    <div
+    className={`pointer-events-none absolute inset-0 bg-black transition-opacity duration-500 ${dark ? 'opacity-30' : 'opacity-0'}`}
+    />
       <WidgetsLayer />
       <WindowManager />
       <MenuBar />
