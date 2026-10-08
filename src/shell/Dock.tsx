@@ -1,13 +1,11 @@
 import { Fragment, useRef, useState } from 'react'
 import { apps, iconPath } from '../core/appRegistry'
 import { useWindowStore } from '../core/store/windowStore'
-import { useIsDark } from '../core/theme'
 
 const BASE = 54
 const GAP = 8
 const MAX_SCALE = 1.7
 const RANGE = 140
-const dark = useIsDark()
 interface Entry {
   key: string
   title: string

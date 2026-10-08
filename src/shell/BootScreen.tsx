@@ -11,7 +11,7 @@ export default function BootScreen() {
   useEffect(() => {
     const start = performance.now()
     let raf = 0
-    let timeout: number
+    let timeout: number | undefined
 
     const tick = (now: number) => {
       const p = Math.min((now - start) / BOOT_DURATION, 1)
@@ -34,14 +34,15 @@ export default function BootScreen() {
   return (
     <div
       className={`fixed inset-0 bg-black flex flex-col items-center justify-center
-        transition-opacity duration-700 ${fading ? 'opacity-0' : 'opacity-100'}`}
+        transition-opacity duration-700
+        ${fading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
     >
-    <img
-    src="/logo.png"
-    alt=""
-    draggable={false}
-    className="w-20 invert mix_blend-screen"
-    />
+      <img
+        src="/logo.png"
+        alt=""
+        draggable={false}
+        className="w-20 invert mix-blend-screen"
+      />
 
       <div className="mt-16 w-48 h-1 rounded-full bg-white/20 overflow-hidden">
         <div
@@ -51,4 +52,4 @@ export default function BootScreen() {
       </div>
     </div>
   )
-}           
+}

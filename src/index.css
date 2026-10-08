@@ -1,4 +1,5 @@
 @import "tailwindcss";
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* dark mode for the light-only apps (Finder, Music, Settings) */
@@ -10,27 +11,31 @@
 
 /* don't lose mouse events over iframes while dragging a window */
 .dragging iframe { pointer-events: none; }
+
 html, body, #root {
   height: 100%;
   margin: 0;
   overflow: hidden;
   background: #000;
-  font-family: -apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
   user-select: none;
-  -webkit-font-smoothin: antialiased;
+  -webkit-font-smoothing: antialiased;
 }
 
-@keyframeshake{
-  0%, 100%{transform:translateX(0);}
-  20%, 60%{transform:translateX(-8px);}
-  40%, 80%{transform:translateX(8px);}
+/* login shake */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
 }
-.shake {animation: shake 035s; }
-@keyframes fadeIn{
-  from{opacity:0;}
-  to{opacity:1;}
+.shake { animation: shake 0.35s; }
+
+/* fade in */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-.fade-in {animation: fadeIn 0.8s ease forwards;}
+.fade-in { animation: fadeIn 0.8s ease forwards; }
 
 /* dock launch bounce */
 @keyframes dock-bounce {
