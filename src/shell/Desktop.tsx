@@ -1,19 +1,48 @@
 import { useSystemStore } from '../core/store/systemStore'
+import { useUiStore } from '../core/store/uiStore'
 import { wallpaperStyle } from '../core/wallpaper'
+import MenuBar from './MenuBar'
+import Dock from './Dock'
+import ControlCenter from './ControlCenter'
+import ContextMenu from './ContextMenu'
+import WidgetsLayer from './WidgetsLayer'
+import WidgetGallery from './WidgetGallery'
+import WindowManager from '../windowing/WindowManager'
 
 export default function Desktop() {
-  const setPhase = useSystemStore((s) => s.setPhase)
+  const brightness = useSystemStore((s) => s.brightness)
+  const { openMenu, setGallery } = useUiStore()
+
+  const onContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (e.target !== e.currentTarget) return // only on the bare desktop
+    openMenu(e.clientX, e.clientY, [
+      { label: 'New Folder', disabled: true },
+      { divider: true },
+      { label: 'Change Wallpaper…', disabled: true },
+      { label: 'Edit Widgets…', onClick: () => setGallery(true) },
+    ])
+  }
 
   return (
-    <div className="fixed inset-0 fade-in" style={wallpaperStyle}>
-      {/* MenuBar, desktop icons, WindowManager and Dock go here */}
+    <div
+      className="fixed inset-0 overflow-hidden fade-in"
+      style={wallpaperStyle}
+      onContextMenu={onContextMenu}
+    >
+      <WidgetsLayer />
+      <WindowManager />
+      <MenuBar />
+      <Dock />
+      <ControlCenter />
+      <WidgetGallery />
+      <ContextMenu />
 
-      <button
-        onClick={() => setPhase('login')}
-        className="absolute top-2 right-3 text-xs text-white/80 hover:text-white"
-      >
-        Log out
-      </button>
+      {/* brightness slider overlay */}
+      <div
+        className="pointer-events-none fixed inset-0 z-[5000] bg-black"
+        style={{ opacity: (1 - brightness) * 0.8 }}
+      />
     </div>
   )
 }

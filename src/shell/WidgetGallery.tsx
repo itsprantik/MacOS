@@ -1,0 +1,54 @@
+import { Plus } from 'lucide-react'
+import { useUiStore } from '../core/store/uiStore'
+import { useWidgetStore, type WidgetType } from '../core/store/widgetStore'
+import { widgetTypes } from '../widgets'
+
+export default function WidgetGallery() {
+  const { galleryOpen, setGallery } = useUiStore()
+  const addWidget = useWidgetStore((s) => s.addWidget)
+  if (!galleryOpen) return null
+
+  return (
+    <div
+      className="fixed inset-0 z-[1500] flex items-center justify-center bg-black/25"
+      onMouseDown={() => setGallery(false)}
+    >
+      <div
+        className="w-[780px] max-w-[94vw] max-h-[82vh] flex flex-col rounded-3xl bg-neutral-900/70 backdrop-blur-3xl border border-white/15 shadow-2xl text-white"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <div className="px-6 pt-5 pb-3 flex items-center justify-between">
+          <div className="text-lg font-semibold">Widgets</div>
+          <button
+            onClick={() => setGallery(false)}
+            className="px-4 py-1 rounded-full bg-[#0a84ff] text-sm font-medium"
+          >
+            Done
+          </button>
+        </div>
+
+        <div className="px-6 pb-4 overflow-auto flex flex-wrap gap-7">
+          {(Object.keys(widgetTypes) as WidgetType[]).map((type) => {
+            const def = widgetTypes[type]
+            const Cmp = def.Component
+            return (
+              <div key={type} className="flex flex-col items-center gap-2">
+                <button onClick={() => addWidget(type)} className="relative">
+                  <Cmp />
+                  <span className="absolute -top-2 -left-2 w-6 h-6 rounded-full bg-[#30d158] flex items-center justify-center shadow-lg">
+                    <Plus size={14} strokeWidth={3} />
+                  </span>
+                </button>
+                <div className="text-[12px] text-white/80">{def.label}</div>
+              </div>
+            )
+          })}
+        </div>
+
+        <div className="px-6 pb-4 text-[12px] text-white/50">
+          Click a widget to add it. Right-click a widget on the desktop to remove it.
+        </div>
+      </div>
+    </div>
+  )
+}

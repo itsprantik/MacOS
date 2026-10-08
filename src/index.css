@@ -21,3 +21,48 @@ html, body, #root {
   to{opacity:1;}
 }
 .fade-in {animation: fadeIn 0.8s ease forwards;}
+
+/* dock launch bounce */
+@keyframes dock-bounce {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-22px); }
+  55% { transform: translateY(0); }
+  75% { transform: translateY(-10px); }
+}
+.dock-bounce { animation: dock-bounce 0.9s ease-out 1; }
+
+/* window open */
+@keyframes win-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+.win-in { animation: win-in 0.2s ease-out; }
+
+/* Control Center sliders */
+.cc-slider { -webkit-appearance: none; appearance: none; height: 22px; background: transparent; cursor: pointer; }
+.cc-slider::-webkit-slider-runnable-track {
+  height: 22px; border-radius: 11px;
+  background: linear-gradient(to right, #fff var(--v), rgba(255,255,255,0.28) var(--v));
+}
+.cc-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+  background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.cc-slider::-moz-range-track { height: 22px; border-radius: 11px; background: rgba(255,255,255,0.28); }
+.cc-slider::-moz-range-progress { height: 22px; border-radius: 11px; background: #fff; }
+.cc-slider::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #fff; border: none; }
+
+/* thin sliders (music progress + volume) */
+.range-thin { -webkit-appearance: none; appearance: none; height: 14px; background: transparent; cursor: pointer; }
+.range-thin::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 2px;
+  background: linear-gradient(to right, #6b7280 var(--v), rgba(0,0,0,0.12) var(--v));
+}
+.range-thin::-webkit-slider-thumb { -webkit-appearance: none; width: 0; height: 0; }
+.range-thin:hover::-webkit-slider-thumb {
+  width: 10px; height: 10px; border-radius: 50%; background: #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.25); margin-top: -3px;
+}
+.range-thin::-moz-range-track { height: 4px; border-radius: 2px; background: rgba(0,0,0,0.12); }
+.range-thin::-moz-range-progress { height: 4px; border-radius: 2px; background: #6b7280; }
+.range-thin::-moz-range-thumb { width: 0; height: 0; border: none; }
