@@ -3,30 +3,31 @@ MacOS Web OS
 A macOS-inspired Web OS built with React, TypeScript, Vite, Tailwind CSS, Zustand, and Electron.
 
 Features
-macOS-style desktop
-Window management
-Resizable and movable application windows
-Dock
-Menu bar
-Finder
-Safari
-Music
-Settings
-Terminal
-Calculator
-Clock
-News
-Desktop widgets
-Multiple wallpapers
-Dark and light UI
-Electron desktop support
-Native browser rendering through Electron
-Requirements
+*macOS-style desktop
+*Window management
+*Resizable and movable application windows
+*Dock
+*Menu bar
+*Finder
+*Safari
+*Music
+*Settings
+*Terminal
+*Calculator
+*Clock
+*News
+*Desktop widgets
+*Multiple wallpapers
+*Dark and light UI
+*Electron desktop support
+*Native browser rendering through Electron
+*Requirements
 
 Install the following before cloning the project:
 
 Git
 Node.js
+
 npm
 
 Check Git:
