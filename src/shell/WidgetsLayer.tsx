@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Minus } from 'lucide-react'
-import { useWidgetStore, WIDGET_SPAN, type WidgetInstance } from '../core/store/widgetStore'
+import { useWidgetStore, WIDGET_SIZE, type WidgetInstance } from '../core/store/widgetStore'
 import { useUiStore } from '../core/store/uiStore'
 import { widgetTypes } from '../widgets'
 import { CELL, GAP, STEP, MARGIN_X, MARGIN_TOP, gridSize } from '../core/widgetGrid'
@@ -10,8 +10,8 @@ export default function WidgetsLayer() {
   const editing = useUiStore((s) => s.galleryOpen)
   const [drag, setDrag] = useState<{ id: string; x: number; y: number } | null>(null)
   const [, bump] = useState(0)
+  const suppressClick = useRef(false)
 
-  // re-clamp positions when the window is resized
   useEffect(() => {
     const on = () => bump((n) => n + 1)
     window.addEventListener('resize', on)
@@ -21,10 +21,10 @@ export default function WidgetsLayer() {
   const { cols, rows } = gridSize()
 
   const place = (w: WidgetInstance) => {
-    const span = WIDGET_SPAN[w.type]
-    const col = Math.min(w.col, Math.max(0, cols - span))
-    const row = Math.min(w.row, rows - 1)
-    return { col, row, x: MARGIN_X + col * STEP, y: MARGIN_TOP + row * STEP, span }
+    const { w: cw, h: ch } = WIDGET_SIZE[w.type]
+    const col = Math.min(w.col, Math.max(0, cols - cw))
+    const row = Math.min(w.row, Math.max(0, rows - ch))
+    return { x: MARGIN_X + col * STEP, y: MARGIN_TOP + row * STEP, cw, ch }
   }
 
   const startDrag = (e: React.PointerEvent, w: WidgetInstance) => {
@@ -46,6 +46,10 @@ export default function WidgetsLayer() {
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
       if (moved) {
+        // a drag must not count as a click on the widget underneath
+        suppressClick.current = true
+        setTimeout(() => (suppressClick.current = false), 0)
+
         const x = baseX + ev.clientX - startX
         const y = baseY + ev.clientY - startY
         useWidgetStore
@@ -71,6 +75,12 @@ export default function WidgetsLayer() {
           <div
             key={w.id}
             onPointerDown={(e) => startDrag(e, w)}
+            onClickCapture={(e) => {
+              if (suppressClick.current) {
+                e.stopPropagation()
+                e.preventDefault()
+              }
+            }}
             onContextMenu={(e) => {
               e.preventDefault()
               e.stopPropagation()
@@ -80,26 +90,29 @@ export default function WidgetsLayer() {
                 { label: 'Edit Widgets…', onClick: () => setGallery(true) },
               ])
             }}
-            className={`absolute pointer-events-auto touch-none select-none
-              ${dragging ? 'z-10 scale-[1.03] cursor-grabbing drop-shadow-2xl' : 'transition-[left,top,transform] duration-200'}`}
+            className={`group absolute pointer-events-auto touch-none select-none ${
+              dragging ? 'z-10 scale-[1.03] cursor-grabbing drop-shadow-2xl' : 'transition-[left,top,transform] duration-200'
+            }`}
             style={{
               left: dragging ? drag.x : p.x,
               top: dragging ? drag.y : p.y,
-              width: p.span * CELL + (p.span - 1) * GAP,
+              width: p.cw * CELL + (p.cw - 1) * GAP,
+              height: p.ch * CELL + (p.ch - 1) * GAP,
             }}
           >
             <Cmp />
 
-            {editing && (
-              <button
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={() => useWidgetStore.getState().removeWidget(w.id)}
-                className="absolute -top-2 -left-2 z-10 w-6 h-6 rounded-full bg-neutral-700/90 border border-white/30 flex items-center justify-center text-white shadow-lg"
-                aria-label="Remove widget"
-              >
-                <Minus size={14} strokeWidth={3} />
-              </button>
-            )}
+            <button
+              aria-label="Remove widget"
+              title="Remove widget"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => useWidgetStore.getState().removeWidget(w.id)}
+              className={`absolute -top-2 -left-2 z-10 w-6 h-6 rounded-full bg-neutral-700/90 border border-white/30 flex items-center justify-center text-white shadow-lg transition-opacity ${
+                editing ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              }`}
+            >
+              <Minus size={14} strokeWidth={3} />
+            </button>
           </div>
         )
       })}

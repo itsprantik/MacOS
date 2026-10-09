@@ -8,6 +8,7 @@ import { useMusicStore } from '../core/store/musicStore'
 import { useWindowStore } from '../core/store/windowStore'
 import { tracks } from '../apps/Music/tracks'
 import { useIsDark } from '../core/theme'
+import { useUiStore } from '../core/store/uiStore'
 
 const glass =
   'bg-white/[0.14] backdrop-blur-2xl border border-white/20 shadow-[0_4px_20px_rgba(0,0,0,0.15)]'
@@ -178,9 +179,15 @@ const dark = useIsDark()
         </div>
 
         <div className="mt-3 flex justify-center">
-          <span className={`px-3.5 py-1 rounded-full text-[11px] font-medium text-white ${glass}`}>
-            Edit Controls
-          </span>
+          <button
+  onClick={() => {
+    useUiStore.getState().setGallery(true)
+    s.setControlCenter(false)
+  }}
+  className={`px-3.5 py-1 rounded-full text-[11px] font-medium text-white ${glass}`}
+>
+  Edit Controls
+</button>
         </div>
       </div>
     </>

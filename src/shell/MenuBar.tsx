@@ -43,6 +43,12 @@ export default function MenuBar() {
     return () => clearInterval(id)
   }, [])
 
+  // tell Safari's native view to step aside while a menu is open
+  useEffect(() => {
+    useUiStore.getState().setMenuOpen(open !== null)
+    return () => useUiStore.getState().setMenuOpen(false)
+  }, [open])
+
   const clock =
     now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).replace(',', '') +
     '  ' +
@@ -79,7 +85,7 @@ export default function MenuBar() {
                 className="absolute top-7 left-0"
                 onDone={() => setOpen(null)}
                 items={[
-                  { label: 'About This Mac', disabled: true },
+                  { label: 'About This Mac', onClick: () => openApp('about')},
                   {
                     label: 'About the Creator…',
                     onClick: () => {

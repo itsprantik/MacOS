@@ -1,6 +1,5 @@
 import type { ComponentType } from 'react'
 import type { AppProps } from '../core/types'
-
 import Placeholder from './Placeholder'
 import MusicApp from './Music'
 import Finder from './Finder'
@@ -10,11 +9,10 @@ import Safari from './Safari'
 import News from './News'
 import Calculator from './Calculator'
 import Clock from './Clock'
+import Calendar from './Calendar'
+import About from './About'
 
-const appComponents: Record<
-  string,
-  ComponentType<AppProps>
-> = {
+const appComponents: Record<string, ComponentType<AppProps>> = {
   music: MusicApp,
   finder: Finder,
   settings: Settings,
@@ -23,7 +21,8 @@ const appComponents: Record<
   news: News,
   calculator: Calculator,
   clock: Clock,
+  calendar: Calendar,
+  about: About,
 }
 
-export const getAppComponent = (id: string) =>
-  appComponents[id] ?? Placeholder  
+export const getAppComponent = (id: string) => appComponents[id] ?? Placeholder

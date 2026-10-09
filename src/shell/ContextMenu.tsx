@@ -15,15 +15,18 @@ export default function ContextMenu() {
         closeMenu()
       }}
     >
-      <MenuPanel
-        items={items}
-        onDone={closeMenu}
+      {/* stop the press from reaching the backdrop, otherwise the menu closes before the click */}
+      <div
         className="absolute"
+        onMouseDown={(e) => e.stopPropagation()}
+        onContextMenu={(e) => e.stopPropagation()}
         style={{
           left: Math.min(x, window.innerWidth - 230),
           top: Math.min(y, window.innerHeight - items.length * 28 - 20),
         }}
-      />
+      >
+        <MenuPanel items={items} onDone={closeMenu} />
+      </div>
     </div>
   )
 }

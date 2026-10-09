@@ -150,7 +150,7 @@ export default function AppWindow({ win }: { win: WindowState }) {
         <Content title={app.title} />
       </div>
 
-      {!win.maximized && (
+      {!win.maximized && app.resizable !== false && (
         <div
           onPointerDown={startResize}
           className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize z-30"

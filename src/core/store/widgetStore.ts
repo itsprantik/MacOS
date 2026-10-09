@@ -2,7 +2,10 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { gridSize } from '../widgetGrid'
 
-export type WidgetType = 'calendar' | 'weather' | 'clock' | 'battery' | 'glance'
+export type WidgetType =
+  | 'calendar' | 'month' | 'upnext' | 'weather' | 'clock' | 'timer'
+  | 'battery' | 'nowplaying' | 'news' | 'f1' | 'github' | 'glance'
+
 export interface WidgetInstance {
   id: string
   type: WidgetType
@@ -10,35 +13,46 @@ export interface WidgetInstance {
   row: number
 }
 
-export const WIDGET_SPAN: Record<WidgetType, number> = {
-  calendar: 1,
-  weather: 1,
-  clock: 1,
-  battery: 1,
-  glance: 2,
+export const WIDGET_SIZE: Record<WidgetType, { w: number; h: number }> = {
+  calendar: { w: 1, h: 1 },
+  month: { w: 2, h: 2 },
+  upnext: { w: 2, h: 1 },
+  weather: { w: 1, h: 1 },
+  clock: { w: 1, h: 1 },
+  timer: { w: 1, h: 1 },
+  battery: { w: 1, h: 1 },
+  nowplaying: { w: 2, h: 1 },
+  news: { w: 2, h: 1 },
+  f1: { w: 2, h: 1 },
+  github: { w: 2, h: 1 },
+  glance: { w: 2, h: 1 },
 }
 
-// nearest free grid cell to (col,row) that fits this widget
-function nearestFree(ws: WidgetInstance[], type: WidgetType, ignoreId: string | null, col: number, row: number) {
+// nearest free spot for a widget of this size
+function nearestFree(
+  ws: WidgetInstance[], type: WidgetType, ignoreId: string | null, col: number, row: number,
+) {
   const { cols, rows } = gridSize()
-  const span = WIDGET_SPAN[type]
+  const { w, h } = WIDGET_SIZE[type]
+
   const taken = new Set<string>()
-  for (const w of ws) {
-    if (w.id === ignoreId) continue
-    for (let c = 0; c < WIDGET_SPAN[w.type]; c++) taken.add(`${w.col + c},${w.row}`)
+  for (const o of ws) {
+    if (o.id === ignoreId) continue
+    const s = WIDGET_SIZE[o.type]
+    for (let c = 0; c < s.w; c++) for (let r = 0; r < s.h; r++) taken.add(`${o.col + c},${o.row + r}`)
   }
 
   let best: { col: number; row: number } | null = null
   let bestD = Infinity
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c <= cols - span; c++) {
+  for (let r = 0; r <= rows - h; r++) {
+    for (let c = 0; c <= cols - w; c++) {
       let free = true
-      for (let k = 0; k < span; k++) {
-        if (taken.has(`${c + k},${r}`)) {
-          free = false
-          break
-        }
-      }
+      for (let dc = 0; dc < w && free; dc++)
+        for (let dr = 0; dr < h; dr++)
+          if (taken.has(`${c + dc},${r + dr}`)) {
+            free = false
+            break
+          }
       if (!free) continue
       const d = (c - col) ** 2 + (r - row) ** 2
       if (d < bestD) {
@@ -47,7 +61,12 @@ function nearestFree(ws: WidgetInstance[], type: WidgetType, ignoreId: string | 
       }
     }
   }
-  return best ?? { col: Math.max(0, Math.min(col, cols - span)), row: Math.max(0, Math.min(row, rows - 1)) }
+  return (
+    best ?? {
+      col: Math.max(0, Math.min(col, cols - w)),
+      row: Math.max(0, Math.min(row, rows - h)),
+    }
+  )
 }
 
 export function defaultWidgets(): WidgetInstance[] {
@@ -78,7 +97,7 @@ export const useWidgetStore = create<WidgetState>()(
       addWidget: (type) =>
         set((s) => {
           const { cols } = gridSize()
-          const pos = nearestFree(s.widgets, type, null, cols - WIDGET_SPAN[type], 0)
+          const pos = nearestFree(s.widgets, type, null, cols - WIDGET_SIZE[type].w, 0)
           return { widgets: [...s.widgets, { id: crypto.randomUUID(), type, ...pos }] }
         }),
 

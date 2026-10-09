@@ -21,7 +21,7 @@ export const apps: AppDefinition[] = [
   app('maps', 'Maps'),
   app('photos', 'Photos'),
   app('facetime', 'FaceTime'),
-  app('calendar', 'Calendar'),
+  app('calendar', 'Calendar', { defaultSize: { width: 1040, height: 660 } }),
   app('contacts', 'Contacts'),
   app('reminders', 'Reminders'),
   app('notes', 'Notes'),
@@ -32,6 +32,7 @@ export const apps: AppDefinition[] = [
   app('clock', 'Clock', { defaultSize: { width: 440, height: 520 }}),
   app('terminal', 'Terminal', { defaultSize: { width: 780, height: 480 } }),
   app('settings', 'Settings', { defaultSize: { width: 880, height: 580 } }),
+  app('about', 'About This Mac', { inDock: false, resizable: false, defaultSize: { width: 320, height: 480 } }),
 ]
 
 export const getApp = (id: string) => apps.find((a) => a.id === id)
