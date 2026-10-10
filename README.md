@@ -582,4 +582,3 @@ Created by [@itsprantik](https://github.com/itsprantik).
 
 Inspired by the look and feel of macOS. Built as a learning project to understand how a desktop interface works: windowing, state, animation and desktop packaging.
 
-**License:** add a `LICENSE` file to choose how others may use your code (MIT is a common choice).
