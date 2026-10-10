@@ -2,9 +2,6 @@ const {
   app, BrowserWindow, WebContentsView, ipcMain, shell, protocol, net, session, screen,
 } = require('electron')
 const os = require('os')
-const {
-  app, BrowserWindow, WebContentsView, ipcMain, shell, protocol, net, session,
-} = require('electron')
 const path = require('path')
 const { pathToFileURL } = require('url')
 
