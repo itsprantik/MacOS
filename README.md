@@ -1,584 +1,515 @@
-# WebOS: a macOS-style desktop that runs in your browser (and as a desktop app)
+# WebOS
 
-A complete desktop environment built from scratch with **React + TypeScript**. It has a boot screen, a login screen, a menu bar, a magnifying Dock, draggable windows, widgets, a Control Center and a set of working apps (Finder, Music, Safari, News, Calendar, Terminal, Settings and more). You can run it in a web browser or as a real desktop program with **Electron**.
+A desktop that looks like macOS that runs inside a browser and also as a desktop app using Electron. I made it myself in my time while studying, mostly to understand how a desktop interface actually works from the inside: windows, state, animation, everything.
 
-> This is an independent learning project. It is **not affiliated with Apple**. Apple, macOS, Safari and related names and logos are trademarks of Apple Inc.
+It has a boot screen, a login screen, a menu bar, a Dock that expands, windows, widgets, a Control Center and a few apps that actually work (Finder, Music, Safari, News, Calendar, Calculator, Clock, Terminal, Settings, About This Mac).
 
----
-
-## Table of contents
-
-1. [What you get](#what-you-get)
-2. [Quick start (copy and paste)](#quick-start-copy-and-paste)
-3. [Step-by-step setup for complete beginners](#step-by-step-setup-for-complete-beginners)
-4. [Running the app](#running-the-app)
-5. [Add your own media (optional)](#add-your-own-media-optional)
-6. [API keys (optional)](#api-keys-optional)
-7. [Personalize it](#personalize-it)
-8. [Features of every app](#features-of-every-app)
-9. [Desktop features](#desktop-features)
-10. [Project structure](#project-structure)
-11. [How to add a new app](#how-to-add-a-new-app)
-12. [Build and publish](#build-and-publish)
-13. [Troubleshooting](#troubleshooting)
-14. [Tech stack](#tech-stack)
-15. [Credits](#credits)
+This is a learning project. It is not connected to Apple. Apple, macOS, Safari and related names and logos belong to Apple Inc.
 
 ---
 
-## What you get
+## Why I made this
 
-| Area | Highlights |
+I wanted a project that was bigger than a to-do app. I had been using React for a while. Only ever built small pages and I kept wondering about how things like a window manager work. Who decides which window is on top? How does a Dock icon know how big to be when the mouse is near it? So I decided to try building one.
+
+I did it in the evenings and on weekends around classes so it took a lot longer than I planned. The first version was a gray rectangle you could drag around. Everything else grew from that.
+
+## How it went (the honest version)
+
+Some of the things that took the time:
+
+**Windows and focus.** Moving a div is easy. Moving it without it jumping keeping the one on top and making resize and minimize work together was not. I rewrote the window store least twice before I stopped fighting it. Keeping all window state in Zustand of inside components is what finally made it make sense.
+
+**The Dock expansion.** I thought this would be a CSS thing. It is not. The icons need to grow based on distance from the cursor. The neighbors have to move apart smoothly without the whole row shaking. I got the math wrong times before it felt right.
+
+**Safari in the browser.** I built a Safari app then found out that big sites (Google, YouTube and many others) refuse to load inside an iframe. For a while I thought my code was broken. It was not the sites block it on purpose. The fix was Electron, where I can use an embedded browser view. In the web version Safari still only works well with sites that allow iframes, like Wikipedia.
+
+**NewsAPI.** The free plan only works from localhost. News worked perfectly on my machine. Then failed as soon as I deployed it. I had to move the request into a server function (`api/news.js`) so the key stays on the server and the request does not come from the browser.
+
+**GitHub rate limits.** The Calendar pulls release dates from GitHub. I kept hitting the 60 requests per hour limit while testing. That is why results are cached now.
+
+**Dark mode.** The newer apps are styled for mode properly. Finder, Music and Settings use a color inversion trick because I did not want to restyle them. It works enough but it is not perfect and I know it.
+
+**. Media.** I originally had icons as `.ico` files and nothing showed up until I converted them to PNG. I also learned that I should not publish copyrighted songs or icon packs in a repo so the media folders are optional and the app falls back to lettered tiles and gradients when files are missing.
+
+**Tailwind. Typescript.** Tailwind v4 changed how it is set up compared to every tutorial I found so I lost some time there. TypeScript errors during `npm run build` also taught me to stop leaving imports around.
+
+There are still parts. Some apps are placeholders the Terminal only pretends to run Git. I am sure there are bugs I have not found yet.
+
+---
+
+## What is in it
+
+| Area | Details |
+
 |---|---|
-| **Startup** | Boot screen with progress bar, macOS-style lock screen, any password works (or set your own) |
-| **Desktop** | Menu bar, Dock with magnification, wallpapers, right-click menu |
-| **Windows** | Drag, resize, minimize, zoom, focus, open animation |
-| **Widgets** | 12 widgets you can drag, snap, add and remove |
-| **Control Center** | Toggles, brightness, volume, dark mode, now playing |
-| **Apps** | Finder, Music, Safari, News, Calendar, Calculator, Clock, Terminal, Settings, About This Mac |
-| **Saved data** | Files, widgets, wallpaper, calendar events and settings are remembered in your browser |
 
-<!-- Add screenshots here once you have them, for example:
-![Desktop](docs/desktop.png)
--->
+Startup | Boot screen with a progress bar, lock screen. Any password works unless you set your |
+
+| Desktop | Menu bar Dock with expansion, wallpapers, right-click menu |
+
+| Windows | Drag, resize, minimize, zoom focus, open animation |
+
+| Widgets | 12 widgets you can drag, snap, add and remove |
+
+| Control Center | Toggles, brightness, volume, dark mode now playing |
+
+| Apps | Finder, Music, Safari, News, Calendar, Calculator, Clock, Terminal, Settings, About This Mac |
+
+Saved data | Files, widgets, wallpaper, calendar events and settings are stored in your browser |
 
 ---
 
-## Quick start (copy and paste)
+## Getting it running
 
-You need **Node.js** and **Git** installed (see the next section if you don't have them).
+You need Node.js (version 20.19 or higher 22 is best) and Git.
 
 ```bash
-# 1. Download the project
+
 git clone https://github.com/itsprantik/MacOS.git
+
 cd MacOS
 
-# 2. Install everything the project needs (this also installs Electron)
 npm install
 
-# 3a. Run it in your web browser
-npm run dev
-
-# 3b. OR run it as a desktop app (Electron)
-npm run electron:dev
 ```
 
-For 3a, open the address shown in the terminal, normally **http://localhost:5173**.
+`npm install` can take a minutes because Electron is around 100 MB.
 
----
-
-## Step-by-step setup for complete beginners
-
-### Step 1: Install the tools
-
-| Tool | What it is for | Download |
-|---|---|---|
-| **Node.js (LTS)** | Runs the project's tools. npm comes with it | https://nodejs.org |
-| **Git** | Downloads the code | https://git-scm.com |
-| **VS Code** (optional) | A friendly code editor | https://code.visualstudio.com |
-
-After installing, **close and reopen your terminal**, then check:
+Then pick one:
 
 ```bash
-node -v     # should print v20.19 or higher (v22 is ideal)
-npm -v      # should print a number
-git --version
+
+# in the browser
+
+npm run dev
+
+# as a desktop app
+
+npm run electron:dev
+
 ```
 
-> **How to open a terminal:** on Windows search for "PowerShell" or "Terminal". On Mac open "Terminal". In VS Code press Ctrl + ` (backtick).
+For the browser version open the address printed in the terminal, http://localhost:5173.
 
-**Windows only:** if `npm` says *"running scripts is disabled on this system"*, run this once in PowerShell, then try again:
+### If you are new to all this
+
+1. Install Node.js (LTS) from https://nodejs.org and Git from https://git-scm.com. VS Code is optional.
+
+2. Close and reopen your terminal after installing otherwise it will not find the commands.
+
+3. Check that it worked:
+
+```bash
+
+node -v
+
+npm -v
+
+git --version
+
+```
+
+4. On Windows if PowerShell says running scripts is disabled run this once. Try again:
 
 ```powershell
+
 Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+
 ```
 
-### Step 2: Download the project
+### Commands
 
-```bash
-git clone https://github.com/itsprantik/MacOS.git
-cd MacOS
-```
+| Command | What it does
 
-(`cd MacOS` means "go into the MacOS folder".)
-
-### Step 3: Install the dependencies
-
-```bash
-npm install
-```
-
-This reads `package.json` and downloads everything into a `node_modules` folder. It can take a few minutes because Electron is about 100 MB. You only need to do this once.
-
-<details>
-<summary><b>Optional: the individual install commands (for reference)</b></summary>
-
-You do **not** need these if `npm install` worked. They show what the project depends on, and they are what you would run if you were building the project from scratch.
-
-```bash
-# App libraries
-npm install react react-dom zustand lucide-react
-
-# Build tools
-npm install -D vite @vitejs/plugin-react typescript tailwindcss @tailwindcss/vite
-
-# Desktop app (Electron) tools
-npm install -D electron concurrently wait-on
-
-# Only if you want to build an installer (see "Build and publish")
-npm install -D electron-builder
-```
-
-| Package | What it does |
 |---|---|
-| `react`, `react-dom` | The user-interface library |
-| `zustand` | Small state manager (windows, widgets, settings) |
-| `lucide-react` | Icon set |
-| `vite` | Fast dev server and bundler |
-| `typescript` | Typed JavaScript |
-| `tailwindcss`, `@tailwindcss/vite` | Styling |
-| `electron` | Turns the web app into a desktop program |
-| `concurrently`, `wait-on` | Start Vite first, then open Electron |
-| `electron-builder` | (Optional) creates an installer |
 
-</details>
+| `npm install` | Install dependencies (once) |
 
----
+| `npm run dev` | Web version at http://localhost:5173 |
 
-## Running the app
+| `npm run electron:dev` | Desktop version |
 
-### Option A: In your web browser
+| `npm run build` | Type-check and build into `dist/` |
 
-```bash
-npm run dev
-```
+| `npm run preview` | Serve the production build locally |
 
-Open **http://localhost:5173**. Stop the server with **Ctrl + C**.
+| `npm run electron:build` | Make a desktop installer in `release/` |
 
-### Option B: As a desktop app with Electron
-
-```bash
-npm run electron:dev
-```
-
-This starts the Vite dev server and opens an Electron window once it is ready. In the desktop app Safari becomes a **real built-in browser** (it can open sites like Google and YouTube that refuse to appear inside a normal web page).
-
-### All commands
-
-| Command | What it does |
-|---|---|
-| `npm install` | Install dependencies (do this first, once) |
-| `npm run dev` | Start the web version at http://localhost:5173 |
-| `npm run electron:dev` | Start the desktop (Electron) version |
-| `npm run build` | Check the code and create the production build in `dist/` |
-| `npm run preview` | Serve the production build locally to test it |
-| `npm run electron:build` | (Optional) create a desktop installer in `release/` |
-
-### Make sure `package.json` has these
-
-If a command above says *"missing script"*, add this to your `package.json`:
+If you get "missing script" make sure your `package.json` has this:
 
 ```json
+
 {
-  "main": "electron/main.cjs",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "electron:dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && electron .\"",
-    "electron:build": "npm run build && electron-builder"
-  }
+
+"main": "electron/main.cjs"
+
+"scripts": {
+
+"dev": "vite"
+
+"build": "tsc -b && vite build"
+
+"preview": "vite preview"
+
+"electron:dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && electron.\""
+
+"electron:build": "npm run build && electron-builder"
+
 }
+
+}
+
 ```
 
-and pin the dev port in `vite.config.ts` so Electron always finds it:
+and pin the port in `vite.config.ts` so Electron can always find the dev server:
 
 ```ts
+
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
-  server: { port: 5173, strictPort: true },
+
+plugins: [react() tailwindcss()]
+
+server: { port: 5173 strictPort:
+
 })
+
 ```
 
 ---
 
-## Add your own media (optional)
+## Adding your own media (optional)
 
-The OS **works without any of these**: missing icons become lettered tiles, a missing wallpaper falls back to a gradient, and missing covers show a red music tile. To make it look and sound complete, put your own files in the `public/` folder.
+Everything works without these. Missing icons become tiles a missing wallpaper becomes a gradient and missing covers become a red music tile. Put your files in `public/`.
 
-> Copyrighted images, icon packs and songs are not something you should publish on a public website. Use your own files or royalty-free ones for anything you share.
+Please use your files or royalty-free ones. Do not push copyrighted songs or icon packs to a repo.
 
-### Logo
+- **Logo:** `/logo.png`. A logo on white or transparent works the app inverts it.
 
-`public/logo.png`: used on the boot screen and the menu bar. A black logo on a white or transparent background works (the app inverts it to white).
+- **Dock icons:** one PNG per app in `/icons/` lowercase names that match exactly:
 
-### Dock icons
+`finder.png` `safari.png` `messages.png` `mail.png` `maps.png` `photos.png` `facetime.png` `calendar.png` `contacts.png` `reminders.png` `notes.png` `music.png` `news.png` `appstore.png` `calculator.png` `clock.png` `terminal.png` `settings.png` `trash-empty.png`.
 
-Put one PNG per app in `public/icons/`. The file name must match exactly (lowercase):
+If you have `.ico` files convert them or set `ICON_EXT = 'ico'` in `src/core/appRegistry.ts`.
 
-```
-finder.png     safari.png     messages.png   mail.png       maps.png
-photos.png     facetime.png   calendar.png   contacts.png   reminders.png
-notes.png      music.png      news.png       appstore.png   calculator.png
-clock.png      terminal.png   settings.png   trash-empty.png
-```
+- **Wallpaper:** `/wallpapers/default.jpg`. Five gradient wallpapers are built in. To add one drop an image in the folder. Add it to the list in `src/core/wallpaper.ts`.
 
-> Have `.ico` files instead? Convert them to PNG, or set `ICON_EXT = 'ico'` in `src/core/appRegistry.ts`.
-
-### Wallpaper
-
-`public/wallpapers/default.jpg`: the main wallpaper ("Tahoe"). Five more gradient wallpapers are built in. To add your own, drop an image in `public/wallpapers/` and add an entry to the list in `src/core/wallpaper.ts`.
-
-### Music
-
-Songs go in `public/music/` and album covers in `public/music/covers/`, with matching names:
-
-```
-public/music/sao-paulo.mp3          public/music/covers/sao-paulo.jpg
-public/music/timeless.mp3           public/music/covers/timeless.jpg
-... (blinding-lights, starboy, billie-jean, dracula,
-     past-lives, attention, love-me-not, i-wanna-be-yours)
-```
-
-Using your own songs? Edit the list in **`src/apps/Music/tracks.ts`**: one line per song (file name, title, artist).
+- **Music:** songs in `/music/` covers in `public/music/covers/` with matching names (for example `sao-paulo.mp3` and `covers/sao-paulo.jpg`). To use your songs, edit `src/apps/Music/tracks.ts` one line per song.
 
 ---
 
 ## API keys (optional)
 
-Two features use free online services. Both are optional.
-
-Create a file named **`.env.local`** in the project's main folder (next to `package.json`):
+Two features use online services. Create a file called `.env.local` next to `package.json`:
 
 ```
+
 VITE_NEWS_API_KEY=your_newsapi_key
+
 VITE_GOOGLE_CSE_ID=your_search_engine_id
+
 ```
 
-| Key | Used by | How to get it (free) |
+| Key | Used by | Where to get it |
+
 |---|---|---|
-| `VITE_NEWS_API_KEY` | **News** app and the *Top Story* widget | Sign up at https://newsapi.org and copy your key |
-| `VITE_GOOGLE_CSE_ID` | **Safari** search results inside the web version | At https://programmablesearchengine.google.com click **Add**, choose **Search the entire web**, create it, copy the **Search engine ID** |
 
-**Restart the dev server** after changing `.env.local`.
+| `VITE_NEWS_API_KEY` News app and the Top Story widget | Sign up at https://newsapi.org |
 
-> NewsAPI's free plan only works from `localhost`, so News works in `npm run dev` and in Electron during development, and needs a small server function if you deploy it online (see [Build and publish](#build-and-publish)). Never commit `.env.local` to GitHub.
+| `VITE_GOOGLE_CSE_ID` | Safari search, in the web version | https://programmablesearchengine.google.com add a search engine that searches the entire web copy the ID |
 
-Everything else (F1 schedule, GitHub releases, public holidays) uses free services that need **no key**.
+Restart the dev server after making changes to the file and never add that file to the commit. The F1 schedule, GitHub releases and public holidays do not need a key.
 
 ---
 
-## Personalize it
+## Changing things to make it yours
 
 | What | Where |
+
 |---|---|
-| Your name, bio, GitHub username, "why I built this" | `src/config/creator.ts` (shown in **Settings → About the Creator**) |
-| GitHub repos and holiday country for the Calendar | `src/config/calendar.ts` |
-| Your display name | **Settings → General → Name** |
-| Login password (any password works by default) | `PASSWORD` constant in `src/shell/LoginScreen.tsx` |
-| Boot screen length | `BOOT_DURATION` in `src/shell/BootScreen.tsx` |
-| Login avatar (emoji or image path) | `avatar` in `src/core/store/systemStore.ts` |
-| Weather widget city and numbers | `CITY` and `WEATHER` in `src/widgets/index.tsx` |
-| Widgets on the left instead of right | Move the default positions in `defaultWidgets()` in `src/core/store/widgetStore.ts` |
+
+| Name, bio GitHub username | src/config/creator.ts |
+
+Calendar repos and holiday country | src/config/calendar.ts |
+
+| Display name | Settings, General, Name |
+
+| Login password | PASSWORD in src/shell/LoginScreen.tsx |
+
+| Boot screen length | BOOT_DURATION in src/shell/BootScreen.tsx |
+
+| Login avatar | avatar in src/core/store/systemStore.ts |
+
+| Weather widget city and numbers | CITY and WEATHER in src/widgets/index.tsx |
+
+| Widget positions | defaultWidgets() in src/core/store/widgetStore.ts |
 
 ---
 
-## Features of every app
+## The apps
 
-### Finder
-A file manager for a virtual file system saved in your browser.
-- Sidebar: Home, Desktop, Documents, Downloads, Music, Pictures, Applications
-- Grid and list views, back and forward buttons, search box, item count and path bar
-- **New Folder** with inline rename, rename and delete from the right-click menu
-- Double-click a folder to open it, a text file to preview it, a song to play it in Music, or an app to launch it
-- The **Applications** folder lists every app, and the **Music** folder lists your songs
-- Shares its files with the Terminal: a folder made in one shows up in the other
+Finder. A file manager for a file system stored in your browser. Sidebar with Home, Desktop, Documents, Downloads, Music, Pictures and Applications. Grid and list views, back and forward search, new folder, rename, delete. Double-click opens folders previews text files plays songs in Music and launches apps. It shares files with the Terminal so a folder made in one shows up in the other.
 
-### Music
-An Apple-Music-style player.
-- Home page with "Top Picks" and "Recently Added" cover rows, plus a Songs list
-- Search box that filters songs
-- Floating player bar: play/pause, previous, next, shuffle, repeat (off, all, one), seek bar, volume
-- Keeps playing when you close the window, and is controllable from Control Center and the *Now Playing* widget
+Music. An Apple Music style player with Top Picks Recently Added and a song list. Search, play and pause, previous and next shuffle, repeat (off, all one) seek bar and volume. It keeps playing when you close the window and can be controlled from Control Center and the Now Playing widget.
 
-### Safari
-A browser with the macOS look.
-- Address bar with favicon and lock, Back and Forward, reload, Share (copies the link), New Tab and Tab Overview
-- Tab bar with several tabs
-- Address-bar dropdown with **Top Hit**, **Switch to Tab** and **Google Suggestions**, usable with arrow keys
-- Start page with **Favourites** (editable) and **Suggestions** from your history, and a sidebar with favourites and history
-- **Desktop (Electron) version:** a real browser view. Google, YouTube and other big sites work, and links that open new windows become new tabs
-- **Web version:** pages load in an iframe. Many big sites refuse this and show blank, but Wikipedia works and Google results work if you set `VITE_GOOGLE_CSE_ID`
+Safari. Address bar, tabs, back and forward reload share, tab overview, a start page with favourites and suggestions from your history and a sidebar. In Electron it is a browser view so Google and YouTube work and links that open new windows become new tabs. In the browser it uses an iframe many big sites show blank.
 
-### News
-A News-style reader powered by NewsAPI.
-- Categories: Today, Business, Technology, Science, Health, Sports, Entertainment
-- Region picker (US, India, UK, Australia, Canada, Germany, France, Japan) and search
-- Large lead story with a card grid, loading placeholders and clear error messages
-- Click a story for a reader card with a link to the full article
-- Results are cached for 10 minutes to save your free requests
+News. A reader powered by NewsAPI. Categories, a region picker (US, India, UK, Australia, Canada, Germany, France, Japan) search, a lead story with a card grid and results cached for 10 minutes to save requests.
 
-### Calendar
-A month calendar that **syncs** from the internet.
-- Sources you can switch on and off in the sidebar: **My Events**, **Formula 1** (every practice, qualifying, sprint and race), **GitHub Releases** (React, Vite, Electron, Zustand, Tailwind, TypeScript by default) and **Public Holidays**
-- Click a day to see its events, with links to the race or release page
-- Add and delete your own events, with an optional time
-- **Refresh** re-fetches the data (otherwise cached for 6 hours)
+Calendar. A month view that pulls data from the internet. You can switch on and off My Events, Formula 1 GitHub Releases (React, Vite, Electron, Zustand, Tailwind, TypeScript by default). Public Holidays.. Delete your own events. Data is cached for 6 hours. Refresh re-fetches it.
 
-### Calculator
-- Add, subtract, multiply, divide, percent, plus/minus, decimals, and chained operations
-- Works with the **keyboard** too (digits, `+ - * /`, Enter, Backspace, Esc)
+Calculator. The. Percent, plus/minus, decimals and chained operations. Works with the keyboard.
 
-### Clock
-- **Timer:** hours, minutes, seconds, quick presets, a progress ring, and three beeps when it ends. It keeps running if you close the window, and a countdown appears in the menu bar
-- **Stopwatch:** start, stop, laps and reset
+Clock. A timer with presets a progress ring and three beeps at the end which keeps running if you close the window and shows a countdown in the menu bar. Also a stopwatch with laps.
 
-### Terminal
-A practice terminal for learning Git and the command line.
-- `git` lists every Git command in groups; `git commit`, `git push` and so on show usage and examples; `git workflow` shows the everyday routine
-- `basics` is a cheat sheet of beginner commands (including Node and npm)
-- Working commands: `ls`, `cd`, `pwd`, `mkdir`, `touch`, `cat`, `echo "text" > file`, `rm`, `open <app>`, `clear`, `history`, `whoami`, `date`, `neofetch`, `about`, `github`
-- Up and down arrows recall earlier commands; **Ctrl + L** clears the screen
-- It explains Git but does **not** run real Git
+Terminal. A practice terminal for learning Git and the command line. Git lists commands, git commit and others show usage git workflow shows the routine basics is a cheat sheet. Working commands include ls, cd, pwd, mkdir, touch, cat echo "text" > file, rm, open <app> clear, history, whoami, date, neofetch, about and github. It explains Git. Does not run real Git.
 
-### Settings
-- **Wi-Fi** and **Bluetooth** switches
-- **Sound** (volume) and **Displays** (brightness)
-- **Appearance:** Light, Dark or Auto
-- **Wallpaper:** six wallpapers to choose from
-- **General:** your name, version info, reset widgets, erase all saved data
-- **About the Creator:** your photo from GitHub, live repo and follower counts, bio, and the story behind the project
+Settings. Wi-Fi and Bluetooth switches, volume, brightness, Light/Dark/Auto, six wallpapers, your name, reset widgets erase all saved data and an About the Creator page.
 
-### About This Mac
-Open it from the Apple menu. It shows your **real computer's** specs when running in Electron (processor, cores, memory, graphics, display, system, battery, uptime). In a browser it shows what the browser allows.
+About This Mac. Shows your computers specs in Electron and whatever the browser allows on the web.
 
-### Not built yet
-Messages, Mail, Maps, Photos, FaceTime, Contacts, Reminders, Notes and App Store open a "coming soon" window. They are placeholders ready to be turned into real apps.
+Not built yet. Messages, Mail, Maps, Photos, FaceTime, Contacts, Reminders, Notes and App Store open a "coming window. They are placeholders I want to turn into apps.
 
 ---
 
 ## Desktop features
 
-### Menu bar
-- **Apple menu:** About This Mac, About the Creator, System Settings, Restart, Shut Down, Log Out
-- Name of the active app, battery menu (real level and charging state in Chrome, Edge and Electron), Wi-Fi status, Control Center button, live clock
-- A running timer shows its countdown here
+- Menu bar: Apple menu (About This Mac, About the Creator, System Settings, Restart Shut Down Log Out) app name, battery, Wi-Fi, Control Center button, clock.
 
-### Dock
-- Icons grow as your mouse moves over them, and neighbors move apart
-- A dot under running apps, a bounce when an app launches, and name labels on hover
+- Dock: icons grow near the cursor a dot shows running apps icons bounce on launch labels show on hover.
 
-### Windows
-- Drag by the top bar, resize from the bottom-right corner
-- Red, yellow and green buttons for close, minimize and zoom (double-click the top bar to zoom)
-- Click a window to bring it to the front
+- Windows: drag by the top bar resize from the bottom-right corner, red/yellow/green buttons double-click the top bar to zoom click to bring to front.
 
-### Control Center
-- Wi-Fi, Bluetooth, AirDrop and Focus toggles
-- **Now Playing** tile with play, previous and next
-- **Display** slider (really dims the screen) and **Sound** slider (changes music volume)
-- Dark mode, Calculator and Timer shortcuts
-- **Edit Controls** opens the widget gallery
+- Control Center: toggles, Now Playing, display and sound sliders (the display slider really dims the screen) dark mode, shortcuts and Edit Controls for the widget gallery.
 
-### Widgets
-Twelve widgets: **Today, Month, Up Next, Clock, Timer, Weather, Batteries, Now Playing, Top Story, Next Race (F1), Releases (GitHub), Day at a Glance**.
-- **Drag** a widget anywhere. It snaps to a grid and nudges to a free spot
-- **Remove** with a right-click → *Remove Widget*, or the **−** badge that appears when you hover over a widget or open the gallery
-- **Add** with a right-click on the desktop → *Edit Widgets…* (or Control Center → *Edit Controls*)
-- The gallery has a category sidebar and a search box. Positions are saved
-
-### Dark mode
-Switch in Control Center or **Settings → Appearance**. The newer apps are styled natively. Finder, Music and Settings use a color-inversion trick that works well but isn't perfect.
-
-### Right-click menu
-Right-click the desktop for *Edit Widgets…*, or right-click items inside Finder for Open, Rename and Delete.
+- Widgets: Today, Month, Up Clock, Timer, Weather, Batteries, Now Playing, Top Story, Next Race, Releases and Day at a Glance. Drag to move (they snap to a grid) right-click to remove, right-click the desktop and choose Edit Widgets to add more.
 
 ---
 
 ## Project structure
 
-```
 MacOS/
+
 ├── electron/
-│   ├── main.cjs            # Electron main process (window, embedded browser, system info)
-│   └── preload.cjs         # Safe bridge between Electron and the app
+
+│ ├── main.cjs # Electron process
+
+│ └── preload.cjs # Bridge between Electron and the app
+
 ├── api/
-│   └── news.js             # Server function for News when hosted on Vercel
-├── public/                 # Files served as-is
-│   ├── logo.png
-│   ├── icons/              # Dock icons (finder.png, safari.png, ...)
-│   ├── wallpapers/         # default.jpg and your own
-│   └── music/              # Songs and covers/
+
+│ └── news.js # Server function for News on Vercel
+
+├── public/ # Logo, icons, wallpapers, music
+
 ├── src/
-│   ├── main.tsx            # Entry point
-│   ├── App.tsx             # Boot → Login → Desktop
-│   ├── index.css           # Tailwind and global styles
-│   ├── config/             # creator.ts, calendar.ts, keys.ts (your settings)
-│   ├── core/
-│   │   ├── appRegistry.ts  # List of apps (Dock, sizes, icons)
-│   │   ├── wallpaper.ts    # Wallpaper list
-│   │   ├── theme.ts        # Light / dark mode
-│   │   ├── widgetGrid.ts   # Widget grid maths
-│   │   ├── calendar/       # F1, GitHub and holiday data sources
-│   │   ├── hooks/          # useBattery, useCalendarData
-│   │   └── store/          # Saved state: system, windows, widgets, files, music, timer, calendar, ui
-│   ├── components/         # Shared pieces (menus, switches, status icons)
-│   ├── shell/              # BootScreen, LoginScreen, Desktop, MenuBar, Dock,
-│   │                       # ControlCenter, ContextMenu, WidgetsLayer, WidgetGallery
-│   ├── windowing/          # WindowManager, AppWindow, TitleBar
-│   ├── widgets/            # All widgets and the widget registry
-│   └── apps/               # One folder per app
-│       ├── index.ts        # Maps app id → component
-│       ├── Finder/  Music/  Safari/  News/  Calendar/
-│       ├── Calculator/  Clock/  Terminal/  Settings/  About/
-│       └── Placeholder.tsx # "Coming soon" window
+
+│ ├── main.tsx
+
+│ ├── App.tsx # Boot, then Login, then Desktop
+
+│ ├── index.css
+
+│ ├── config/ # creator.ts, calendar.ts keys.ts
+
+│ ├── core/ # appRegistry, wallpaper, theme, widgetGrid
+
+│ │ # calendar sources, hooks, stores
+
+│ ├── components/ # Shared pieces
+
+│ ├── shell/ # BootScreen, LoginScreen, Desktop, MenuBar, Dock,
+
+│ │ # ControlCenter, ContextMenu, WidgetsLayer, WidgetGallery
+
+│ ├── windowing/ # WindowManager, AppWindow TitleBar
+
+│ ├── widgets/
+
+│ └── apps/ # One folder per app
+
 ├── index.html
+
 ├── package.json
+
 └── vite.config.ts
+
+Your copy may differ a little as the project changes.
+
+The short version of how it works: Zustand stores hold all the state ( windows, widget positions, settings) and many are saved to localStorage, which is why things survive a refresh. AppRegistry.ts is the one list of apps and the Dock, Finder and the Terminals open command all read from it. AppWindow.tsx wraps any app in a resizable frame. Electron just loads the site in a desktop window and adds a few extras, mainly the real browser inside Safari.
+
+---
+
+## Adding an app
+
+1. Create src/apps/Hello/index.tsx:
+
+```tsx
+
+import type { AppProps } from '../../core/types
+
+export default function Hello({ title }: AppProps) {
+
+return (
+
+<div className="w-full h-full items-center justify-center bg-white/90 text-neutral-900">
+
+Hello from {title}!
+
+</div>
+
+)
+
+}
+
 ```
 
-(Your copy may differ slightly as the project grows.)
+2. Register it in src/core/appRegistry.ts:
 
-### How it works in one minute
-- **Zustand stores** hold the state (which windows are open, widget positions, settings). Many are saved in `localStorage`, which is why your changes survive a refresh.
-- **`appRegistry.ts`** is the single list of apps. The Dock, Finder's Applications folder and the Terminal's `open` command all read from it.
-- **`AppWindow.tsx`** wraps any app in a draggable, resizable window frame.
-- **Electron** loads the same website in a desktop window and adds extras, mainly the real browser inside Safari.
+```ts
 
----
+app('hello' 'Hello' { defaultSize: { width: 500 height: 350 } })
 
-## How to add a new app
+```
 
-1. **Create the app:** `src/apps/Hello/index.tsx`
+3. Connect it in src/apps/index.ts:
 
-   ```tsx
-   import type { AppProps } from '../../core/types'
+```ts
 
-   export default function Hello({ title }: AppProps) {
-     return (
-       <div className="w-full h-full flex items-center justify-center bg-white/90 text-neutral-900">
-         Hello from {title}!
-       </div>
-     )
-   }
-   ```
+import Hello from './Hello'
 
-2. **Register it** in `src/core/appRegistry.ts`:
+//...
 
-   ```ts
-   app('hello', 'Hello', { defaultSize: { width: 500, height: 350 } }),
-   ```
+const appComponents = { /*... */ Hello: Hello }
 
-3. **Connect the component** in `src/apps/index.ts`:
+```
 
-   ```ts
-   import Hello from './Hello'
-   // ...
-   const appComponents = { /* ... */ hello: Hello }
-   ```
+4. Optionally add /icons/hello.png. Without it the Dock shows a tile.
 
-4. *(Optional)* Add `public/icons/hello.png`. Without it the Dock shows a lettered tile.
+It will then show up in the Dock in Finders Applications folder and in the Terminals hello.
 
-Your app now appears in the Dock, in Finder's Applications folder and in the Terminal's `open hello`.
-
-> Tip: the top 40 pixels of every window are the drag handle, and buttons and inputs inside it still work. Leave about 48 pixels of space at the top so your content doesn't sit under the red/yellow/green buttons.
+One thing that tripped me up: the top 40 pixels of every window are the drag handle. Buttons and inputs inside it still work,. Leave about 48 pixels at the top so your content does not sit under the red/yellow/green buttons.
 
 ---
 
-## Build and publish
+## Building and publishing
 
-### Check that it builds
+Check that it builds first:
 
 ```bash
+
 npm run build
+
 npm run preview
+
 ```
 
-`npm run build` also checks your TypeScript. Fix any errors it prints before publishing.
+npm run build also type-checks so fix any error TS... It prints.
 
-### Publish on the web (Vercel)
+### Web (Vercel)
 
-1. Push your code to GitHub.
-2. Go to https://vercel.com → **Add New → Project** → import this repository.
-3. Framework **Vite**, build command `npm run build`, output folder `dist` (the defaults).
-4. Add environment variables: `VITE_GOOGLE_CSE_ID`, `NEWS_API_KEY` (read by `api/news.js`, so the key stays on the server) and `ELECTRON_SKIP_BINARY_DOWNLOAD=1` (makes the build faster).
-5. Click **Deploy**. Every `git push` redeploys automatically.
+1. Push the code to GitHub.
 
-Things to know for the live site:
-- Don't publish copyrighted songs, icon packs or logos (keep `public/music/` out of Git with `.gitignore`).
-- Safari uses the iframe fallback on the web, and many sites will show blank.
-- Each visitor has their own saved files, widgets and settings.
+2. On https://vercel.com choose Add New, Project and import the repo.
 
-### Build a desktop installer (optional)
+3. Framework Vite, build command npm run build, output folder dist.
+
+4. Add environment variables: VITE_GOOGLE_CSE_ID, NEWS_API_KEY (read by api/news.js so the key stays, on the server) and ELECTRON_SKIP_BINARY_DOWNLOAD=1 to make the build faster.
+
+5. Deploy. Every push redeploys.
+
+On the site make sure to keep copyrighted songs, icon packs and logos out of Git (add `public/music/` to `.gitignore`). Safari uses the fallback and many sites will be blank. Each visitor has their saved files, widgets and settings.
+
+### Desktop installer (optional)
 
 ```bash
+
 npm install -D electron-builder
+
 ```
 
-Add this to `package.json`:
+Add to `package.json`:
 
 ```json
+
 "build": {
-  "appId": "com.example.webos",
-  "files": ["dist/**", "electron/**", "package.json"],
-  "directories": { "output": "release" },
-  "win": { "target": "nsis" },
-  "mac": { "target": "dmg" },
-  "linux": { "target": "AppImage" }
+
+"appId": "com.example.webos"
+
+"files": ["dist/**" "electron/**" "package.json"]
+
+"directories": { "output": "release" }
+
+"win": { "target": "nsis" }
+
+"mac": { "target": "dmg" }
+
+"linux": { "target": "AppImage" }
+
 }
+
 ```
 
-Then:
-
-```bash
-npm run electron:build
-```
-
-The installer appears in the `release/` folder. (`output` must not be `dist`, because that is where the website build goes.)
+Then run `npm run electron:build`. The installer is in `release/`. The output folder cannot be `dist` since that is where the website build goes.
 
 ---
 
 ## Troubleshooting
 
 | Problem | Fix |
-|---|---|
-| `node` or `npm` "is not recognized" | Reinstall Node.js, then **close and reopen** the terminal |
-| PowerShell: "running scripts is disabled" | `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` |
-| `npm install` fails or is stuck | Check your internet, delete the `node_modules` folder and run `npm install` again |
-| "Port 5173 is already in use" | Close the other dev server (Ctrl + C in its terminal) and run again |
-| Electron window is blank or says "refused to connect" | Use `npm run electron:dev`, which starts the dev server first. Don't run `electron .` alone |
-| `Missing script: electron:dev` | Add the scripts from [Make sure package.json has these](#make-sure-packagejson-has-these) |
-| Dock shows letters instead of icons | Add PNG icons to `public/icons/` with the exact names listed above |
-| Music doesn't play | Check file names match `src/apps/Music/tracks.ts` exactly (lowercase, `.mp3`) |
-| News says "Connect a news source" | Add `VITE_NEWS_API_KEY` to `.env.local` and restart `npm run dev` |
-| News says the API key was rejected | Re-copy the key from newsapi.org |
-| News works locally but not on the website | NewsAPI's free plan is localhost-only. Use the `api/news.js` function (see Build and publish) |
-| Safari is blank in the browser | Most big sites block iframes. Use the Electron version for a real browser |
-| Calendar says "failed" for GitHub | The free GitHub limit is 60 requests an hour. Wait a bit and press Refresh |
-| Everything looks broken after an update | **Settings → General → Erase…** clears saved data (or clear the site's data in your browser) |
-| Build error `error TS…` | Read the file and line it names. It is usually an unused import or a typo |
 
-Still stuck? Open an issue on GitHub and include the **exact error text** and what you ran.
+|---|---|
+
+node` or `npm` is not recognized | Reinstall Node.js, then close and open the terminal again |
+
+| PowerShell says scripts are disabled | `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` |
+
+| `npm install` fails or hangs | Check your internet connection, delete `node_modules` and run it again |
+
+Port 5173 already in use | Stop the other dev server with Ctrl + C and run again |
+
+| Electron window is blank or "refused to connect" | Use `npm run electron:dev`. Do not run `electron.` alone |
+
+Missing script: electron:dev` | Add the scripts shown in the commands section |
+
+| Dock shows letters, not icons | Add PNGs to `public/icons/` with the exact names |
+
+| Music does not play | File names must match `src/apps/Music/tracks.ts` exactly (lowercase, `.mp3`) |
+
+| News says "Connect a news source" Add `VITE_NEWS_API_KEY` to `.env.local` and restart |
+
+| News says the key was rejected | Copy the key again from newsapi.org |
+
+| News works locally but not online | The free plan is for localhost only. Use `api/news.js` |
+
+Safari is blank in the browser | Big sites block iframes. Use the Electron version |
+
+| Calendar says GitHub "failed" 60 requests per hour limit.. Click Refresh |
+
+| Everything looks broken after an update | Go to Settings, General, Erase to clear saved data or clear the site data in your browser |
+
+If you are still stuck open an issue and paste the exact error text and the command you ran.
 
 ---
 
 ## Tech stack
 
-| | |
-|---|---|
-| UI | React 19, TypeScript |
-| Build | Vite |
-| Styling | Tailwind CSS v4 |
-| State | Zustand (with `persist` for saved data) |
-| Icons | lucide-react |
-| Desktop | Electron (embedded browser through `WebContentsView`) |
-| Free data sources | Jolpica F1 API, GitHub API, Nager.Date holidays, NewsAPI (key needed) |
+React 19 and TypeScript, Vite, Tailwind CSS v4, Zustand (with `persist`) lucide-react for icons and Electron with `WebContentsView` for the embedded browser. Data comes from the Jolpica F1 API, the GitHub API, Nager.Date holidays and NewsAPI (key needed).
+
+---
+
+## What I want to do
+
+- Turn some of the placeholder apps (Notes and Reminders first) into real ones
+
+- Clean up the dark mode so I can drop the inversion trick
+
+- Make windows work better on small screens
+
+- Add screenshots to this README
 
 ---
 
 ## Credits
 
-Created by [@itsprantik](https://github.com/itsprantik).
-
-Inspired by the look and feel of macOS. Built as a learning project to understand how a desktop interface works: windowing, state, animation and desktop packaging.
-
+Made by [@itsprantik](https://github.com/itsprantik). The look and feel is inspired by macOS. Thanks to the APIs that made the Calendar and News possible and, to everyone who writes documentation that is actually readable.
